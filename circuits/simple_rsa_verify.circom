@@ -36,7 +36,7 @@ template simple_RsaVerifyPkcs1v15(w, nb, e_bits, hashLen) {
         pm.modulus[i] <== modulus[i];
     }
 
-    //Second method: Using the isEqual function, we can skip multiple signals. This method takes around 24.7s for the first 4 octet strings using Macbook Air M1 2020 w/ 16GB Ram.
+    //Second method: Using the isEqual function, we can skip multiple signals. This method takes around 24.7s for the entire signature using Macbook Air M1 2020 w/ 16GB Ram.
     //component used to check for every octet string i, if it is equal to the expected octet string
     component isEqual[32];
     //signal array to determine for each octet string i, if it is equal to the expected octet string
