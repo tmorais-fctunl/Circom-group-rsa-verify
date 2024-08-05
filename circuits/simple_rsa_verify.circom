@@ -64,28 +64,38 @@ template simple_RsaVerifyPkcs1v15(w, nb, e_bits, hashLen) {
     // and remain 24 bit
     // 3. Check PS and em[1] = 1. the same code like golang std lib rsa.VerifyPKCS1v15
     var hashprefix[3] = [217300885422736416, 938447882527703397, 18446744069417742640];
-    var hashprefixIdx = 0;
+    //var hashprefixIdx = 0;
     for (var i = 4; i<7; i++) {
-        if (pm.out[i]>hashprefix[hashprefixIdx])
-            interm[i] <== pm.out[i] - hashprefix[hashprefixIdx];
-        else
-            interm[i] <== hashprefix[hashprefixIdx] - pm.out[i];
+        lessThan[i] = LessThan(64);
+        lessThan[i].in[0] <== pm.out[i];
+        lessThan[i].in[1] <== hashprefix[i-4];
+        var less = lessThan[i].out;
+        var bigger = less * (pm.out[i] - hashprefix[i-4]);
+        var lesser = less * (hashprefix[i-4] - pm.out[i]);
+        interm[i] <== bigger + lesser;
     }
 
+    var ff = 18446744073709551615;
     for (var i = 7; i < 31; i++) {
         // 0b1111111111111111111111111111111111111111111111111111111111111111
-        if (pm.out[i]>18446744073709551615)
-            interm[i] <== pm.out[i] - 18446744073709551615;
-        else
-            interm[i] <== 18446744073709551615 - pm.out[i];
-        
+        lessThan[i] = LessThan(64);
+        lessThan[i].in[0] <== pm.out[i];
+        lessThan[i].in[1] <== ff;
+        var less = lessThan[i].out;
+        var bigger = less * (pm.out[i] - ff);
+        var lesser = less * (ff - pm.out[i]);
+        interm[i] <== bigger + lesser;
     }
 
     // 0b1111111111111111111111111111111111111111111111111
-    if (pm.out[31]>562949953421311)
-        interm[31] <== pm.out[31] - 562949953421311;
-    else
-        interm[31] <== 562949953421311 - pm.out[31];
+    var paddingStart = 562949953421311;
+    lessThan[31] = LessThan(64);
+        lessThan[31].in[0] <== pm.out[31];
+        lessThan[31].in[1] <== paddingStart;
+        var less = lessThan[31].out;
+        var bigger = less * (pm.out[31] - paddingStart);
+        var lesser = less * (paddingStart - pm.out[31]);
+        interm[31] <== bigger + lesser;
 
     //-------------result-------------
 
