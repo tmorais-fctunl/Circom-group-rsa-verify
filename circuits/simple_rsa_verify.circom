@@ -25,9 +25,7 @@ template simple_RsaVerifyPkcs1v15(w, nb, e_bits, hashLen) {
     signal input exp[nb];
     signal input sign[nb];
     signal input modulus[nb];
-
     signal input hashed[hashLen];
-
     signal output out[32];
 
     // sign ** exp mod modulus
@@ -38,23 +36,29 @@ template simple_RsaVerifyPkcs1v15(w, nb, e_bits, hashLen) {
         pm.modulus[i] <== modulus[i];
     }
 
-
+    //signal used to verify that the signature verification is successful for every octet string.
     signal interm[32];
 
-    //signal aux = 0; //aux will be 1 if at any time the subtraction of bytes doesnt equal 0 
-
-    //var diff = 0;
+    //component array to determine at each iteration if the octet string is less or equal to the expected value.
+    //This is because, at the end of the verification, the difference between the signature decryption and the expected decryption must be 0.
+    //in order to do this, the difference between pm.out[i] and expected[i], for each octet string i, must be 0. Therefore, adding every difference for every octet string should add up to 0.
+    //Since one side can be larger than the other at any given time, we cannot rely on addition only because of negative differences, since -1 + 1 = 0, just the same as 0+0=0. If we always guarantee that differences are >=0, then surely the addition of all differences will always be >=0
+    component lessThan[32];
+    //this subtractions array stores, for every i in pm.out, two elements: 
+    //subtractions[i*2] = pm.out[i] - something
+    //subtractions[i*2+1] =  something - pm.out[i]
+    //This is needed to build the constraint used by multiplications
+    signal subtractions[64];
+    //this less array stores 1 or 0 if for any octet string i, its value is lesser than the expected, or not, respectively.
+    signal less[32];
+    //this multiplications array stores, for every i in pm.out, two elements: 
+    //multiplications[i*2] = less[i] * subtractions[i*2]
+    //multiplications[i*2+1] =  less[i] * subtractions[i*2+1]
+    //This is needed to build the constraint used by interm
+    signal multiplications[64];
 
     // 1. Check hashed data
     // 64 * 4 = 256 bit. the first 4 numbers
-    component lessThan[32];
-    //this subtractions array stores, for every i in pm.out, two elements: 
-    //subtractions[i] = pm.out[i] - something
-    //subtractions[i+1] =  something - pm.out[i]
-    //same for multiplications but multiplyinh less by subtraction[i]
-    signal subtractions[64];
-    signal less[32];
-    signal multiplications[64];
     for (var i = 0; i < hashLen; i++) {
         lessThan[i] = LessThan(64);
         lessThan[i].in[0] <== pm.out[i];
