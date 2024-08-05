@@ -7,7 +7,8 @@
         "test": "test"
     },
     "scripts": {
-        "test": "NODE_OPTIONS=--max_old_space_size=56000 mocha -r ts-node/register 'test/**/*.ts'"
+        "test": "NODE_OPTIONS=--max_old_space_size=56000 mocha -r ts-node/register 'test/**/*.ts'",
+        "testgroup": "NODE_OPTIONS=--max_old_space_size=56000 mocha -r ts-node/register 'test/test_group_rsa_pkcs1v15.ts'"
     },
     "keywords": [
         "rsa",

@@ -26,7 +26,7 @@ template simple_RsaVerifyPkcs1v15(w, nb, e_bits, hashLen) {
     signal input sign[nb];
     signal input modulus[nb];
     signal input hashed[hashLen];
-    signal output out[32];
+    signal output out;
 
     // sign ** exp mod modulus
     component pm = PowerMod(w, nb, e_bits);
@@ -87,18 +87,22 @@ template simple_RsaVerifyPkcs1v15(w, nb, e_bits, hashLen) {
     equal[31] <== isEqual[31].out;  
 
     //-------------result-------------
+    signal interm[32];
 
-    out[0] <== equal[0];
+    interm[0] <== equal[0];
 
     //we can add all numbers because even though they are 64 bit, 32*(2**64) is only under 70 bits < 254 and therefore circom can handle it.
     for (var i=1; i<31; i++) {
-        out[i] <== out[i-1]+equal[i];
+        interm[i] <== interm[i-1]+equal[i];
     }
 
-    out[31] <== out[30]+equal[31];
+    interm[31] <== interm[30]+equal[31];
 
     //Comment this out before going for group signatures:
-    out[31] === 32;
+    component signatureVerifies = IsEqual();
+    signatureVerifies.in[0] <== interm[31];
+    signatureVerifies.in[1] <== 32;
+    out <== signatureVerifies.out;
 
 
 
