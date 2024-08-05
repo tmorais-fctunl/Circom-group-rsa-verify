@@ -36,50 +36,67 @@ template simple_RsaVerifyPkcs1v15(w, nb, e_bits, hashLen) {
         pm.modulus[i] <== modulus[i];
     }
 
-    //The first method, in which we check the check if pm.out[i] is lesser than expected, map the subtractions of the values and multiply them to their corresponding signals, takes around 25s for the first 4 octet strings using Macbook Air M1 2020 w/ 16GB Ram.
+    //First method: we check the check if pm.out[i] is lesser than expected, map the subtractions of the values and multiply them to their corresponding signals, takes around 25s for the first 4 octet strings using Macbook Air M1 2020 w/ 16GB Ram.
 
     //signal used to verify that the signature verification is successful for every octet string.
-    signal interm[32];
+        //signal interm[32];
 
     //component array to determine at each iteration if the octet string is less or equal to the expected value.
     //This is because, at the end of the verification, the difference between the signature decryption and the expected decryption must be 0.
     //in order to do this, the difference between pm.out[i] and expected[i], for each octet string i, must be 0. Therefore, adding every difference for every octet string should add up to 0.
     //Since one side can be larger than the other at any given time, we cannot rely on addition only because of negative differences, since -1 + 1 = 0, just the same as 0+0=0. If we always guarantee that differences are >=0, then surely the addition of all differences will always be >=0
-    component lessThan[32];
+        //component lessThan[32];
     //this subtractions array stores, for every i in pm.out, two elements: 
     //subtractions[i*2] = pm.out[i] - something
     //subtractions[i*2+1] =  something - pm.out[i]
     //This is needed to build the constraint used by multiplications
-    signal subtractions[64];
+        //signal subtractions[64];
     //this less array stores 1 or 0 if for any octet string i, its value is lesser than the expected, or not, respectively.
-    signal less[32];
+        //signal less[32];
     //this multiplications array stores, for every i in pm.out, two elements: 
     //multiplications[i*2] = less[i] * subtractions[i*2]
     //multiplications[i*2+1] =  less[i] * subtractions[i*2+1]
     //This is needed to build the constraint used by interm
-    signal multiplications[64];
+        //signal multiplications[64];
 
     // 1. Check hashed data
     // 64 * 4 = 256 bit. the first 4 numbers
-    for (var i = 0; i < hashLen; i++) {
-        lessThan[i] = LessThan(64);
-        lessThan[i].in[0] <== pm.out[i];
-        lessThan[i].in[1] <== hashed[i];
-        less[i] <== lessThan[i].out;
-        
-        subtractions[i*2] <== pm.out[i] - hashed[i];
-        //var biggerSubstraction = subtractions[i*2];
-        multiplications[i*2] <== less[i] * subtractions[i*2];
-        //var bigger = less[i] * biggerSubstraction;
-        var bigger = multiplications[i*2];
+    
+    
+    //First method:
+    /*
+        for (var i = 0; i < hashLen; i++) {
+            lessThan[i] = LessThan(64);
+            lessThan[i].in[0] <== pm.out[i];
+            lessThan[i].in[1] <== hashed[i];
+            less[i] <== lessThan[i].out;
+            
+            subtractions[i*2] <== pm.out[i] - hashed[i];
+            //var biggerSubstraction = subtractions[i*2];
+            multiplications[i*2] <== less[i] * subtractions[i*2];
+            //var bigger = less[i] * biggerSubstraction;
+            var bigger = multiplications[i*2];
 
-        subtractions[i*2+1] <== hashed[i] - pm.out[i];
-        //var lesserSubtraction = subtractions[i*2+1];
-        multiplications[i*2+1] <== less[i] * subtractions[i*2+1];
-        //var lesser = less[i] * lesserSubtraction;
-        var lesser = multiplications[i*2+1];
-        
-        interm[i] <== bigger + lesser;        
+            subtractions[i*2+1] <== hashed[i] - pm.out[i];
+            //var lesserSubtraction = subtractions[i*2+1];
+            multiplications[i*2+1] <== less[i] * subtractions[i*2+1];
+            //var lesser = less[i] * lesserSubtraction;
+            var lesser = multiplications[i*2+1];
+            
+            interm[i] <== bigger + lesser;        
+        }
+    */
+
+    //Second method: Using the isEqual function, we can skip multiple signals. This method takes around 24.7s for the first 4 octet strings using Macbook Air M1 2020 w/ 16GB Ram.
+    //component used to check for every octet string i, if it is equal to the expected octet string
+    component isEqual[32];
+    //signal array to determine for each octet string i, if it is equal to the expected octet string
+    signal equal[32];
+    for (var i = 0; i < hashLen; i++) {
+        isEqual[i] = IsEqual();
+        isEqual[i].in[0] <== pm.out[i];
+        isEqual[i].in[1] <== hashed[i];
+        equal[i] <== isEqual[i].out;            
     }
 /*
     // 2. Check hash prefix and 1 byte 0x00
