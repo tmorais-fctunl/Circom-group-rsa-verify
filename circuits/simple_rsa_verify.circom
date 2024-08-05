@@ -48,16 +48,34 @@ template simple_RsaVerifyPkcs1v15(w, nb, e_bits, hashLen) {
     // 1. Check hashed data
     // 64 * 4 = 256 bit. the first 4 numbers
     component lessThan[32];
+    //this subtractions array stores, for every i in pm.out, two elements: 
+    //subtractions[i] = pm.out[i] - something
+    //subtractions[i+1] =  something - pm.out[i]
+    //same for multiplications but multiplyinh less by subtraction[i]
+    signal subtractions[64];
+    signal less[32];
+    signal multiplications[64];
     for (var i = 0; i < hashLen; i++) {
         lessThan[i] = LessThan(64);
         lessThan[i].in[0] <== pm.out[i];
         lessThan[i].in[1] <== hashed[i];
-        var less = lessThan[i].out;
-        var bigger = less * (pm.out[i] - hashed[i]);
-        var lesser = less * (hashed[i] - pm.out[i]);
+        less[i] <== lessThan[i].out;
+        
+        subtractions[i*2] <== pm.out[i] - hashed[i];
+        //var biggerSubstraction = subtractions[i*2];
+        multiplications[i*2] <== less[i] * subtractions[i*2];
+        //var bigger = less[i] * biggerSubstraction;
+        var bigger = multiplications[i*2];
+
+        subtractions[i*2+1] <== hashed[i] - pm.out[i];
+        //var lesserSubtraction = subtractions[i*2+1];
+        multiplications[i*2+1] <== less[i] * subtractions[i*2+1];
+        //var lesser = less[i] * lesserSubtraction;
+        var lesser = multiplications[i*2+1];
+        
         interm[i] <== bigger + lesser;        
     }
-
+/*
     // 2. Check hash prefix and 1 byte 0x00
     // sha256/152 bit
     // 0b00110000001100010011000000001101000001100000100101100000100001100100100000000001011001010000001100000100000000100000000100000101000000000000010000100000
@@ -69,10 +87,18 @@ template simple_RsaVerifyPkcs1v15(w, nb, e_bits, hashLen) {
         lessThan[i] = LessThan(64);
         lessThan[i].in[0] <== pm.out[i];
         lessThan[i].in[1] <== hashprefix[i-4];
-        var less = lessThan[i].out;
-        var bigger = less * (pm.out[i] - hashprefix[i-4]);
-        var lesser = less * (hashprefix[i-4] - pm.out[i]);
-        interm[i] <== bigger + lesser;
+        less[i] <== lessThan[i].out;
+
+        subtractions[i*2] <== pm.out[i] - hashprefix[i-4];
+        var biggerSubstraction = subtractions[i*2];
+        var bigger = less[i] * biggerSubstraction;
+
+        subtractions[i*2+1] <== hashprefix[i-4] - pm.out[i];
+        var lesserSubtraction = subtractions[i*2+1];
+        var lesser = less[i] * lesserSubtraction;
+
+        interm[i] <== bigger + lesser;        
+
     }
 
     var ff = 18446744073709551615;
@@ -81,21 +107,35 @@ template simple_RsaVerifyPkcs1v15(w, nb, e_bits, hashLen) {
         lessThan[i] = LessThan(64);
         lessThan[i].in[0] <== pm.out[i];
         lessThan[i].in[1] <== ff;
-        var less = lessThan[i].out;
-        var bigger = less * (pm.out[i] - ff);
-        var lesser = less * (ff - pm.out[i]);
-        interm[i] <== bigger + lesser;
+        less[i] <== lessThan[i].out;
+
+        subtractions[i*2] <== pm.out[i] - ff;
+        var biggerSubstraction = subtractions[i*2];
+        var bigger = less[i] * biggerSubstraction;
+
+        subtractions[i*2+1] <== ff - pm.out[i*2+1];
+        var lesserSubtraction = subtractions[i+1];
+        var lesser = less[i] * lesserSubtraction;
+
+        interm[i] <== bigger + lesser;  
     }
 
     // 0b1111111111111111111111111111111111111111111111111
     var paddingStart = 562949953421311;
     lessThan[31] = LessThan(64);
-        lessThan[31].in[0] <== pm.out[31];
-        lessThan[31].in[1] <== paddingStart;
-        var less = lessThan[31].out;
-        var bigger = less * (pm.out[31] - paddingStart);
-        var lesser = less * (paddingStart - pm.out[31]);
-        interm[31] <== bigger + lesser;
+    lessThan[31].in[0] <== pm.out[31];
+    lessThan[31].in[1] <== paddingStart;
+    less[31] <== lessThan[31].out;
+
+    subtractions[62] <== pm.out[31] - paddingStart;
+    var biggerSubstraction = subtractions[62];
+    var bigger = less[31] * biggerSubstraction;
+
+    subtractions[63] <== ff - pm.out[31];
+    var lesserSubtraction = subtractions[63];
+    var lesser = less[31] * lesserSubtraction;
+
+    interm[31] <== bigger + lesser;
 
     //-------------result-------------
 
@@ -110,6 +150,8 @@ template simple_RsaVerifyPkcs1v15(w, nb, e_bits, hashLen) {
 
     //Comment this out before going for group signatures:
     out[31] === 0;
+
+*/
 
 }
 
