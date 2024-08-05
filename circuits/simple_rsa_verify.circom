@@ -36,6 +36,8 @@ template simple_RsaVerifyPkcs1v15(w, nb, e_bits, hashLen) {
         pm.modulus[i] <== modulus[i];
     }
 
+    //The first method, in which we check the check if pm.out[i] is lesser than expected, map the subtractions of the values and multiply them to their corresponding signals, takes around 25s for the first 4 octet strings using Macbook Air M1 2020 w/ 16GB Ram.
+
     //signal used to verify that the signature verification is successful for every octet string.
     signal interm[32];
 
