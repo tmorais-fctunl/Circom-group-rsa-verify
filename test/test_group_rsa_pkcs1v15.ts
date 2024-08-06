@@ -97,6 +97,7 @@ describe("Test rsa group signature with pkcs1v15 n = 64, k = 32, nPk = 2", funct
             });
 
             await circuit.checkConstraints(witness);
+            //await circuit.getDecoratedOutput(witness);
         });
     }
 
