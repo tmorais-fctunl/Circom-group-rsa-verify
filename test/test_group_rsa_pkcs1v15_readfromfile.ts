@@ -48,13 +48,13 @@ function setupCircuit(numPublicKeys: number) {
     const circuitPath = "circuits/groupSignatureVaryingKeys";
     const circuitFullPath = `${__dirname}/${circuitPath}/${circuitName}`;
     if (!fs.existsSync(circuitFullPath)) {
-        console.log('Circuit already exists, no need to create.')
         const circuitContent = `pragma circom 2.0.0;
         include "../../../circuits/group_sig_rsa_verify.circom";
         component main{public [publicKeys, hashed]} = GroupRsaVerifyPkcs1v15(64, 32, 17, 4, ${numPublicKeys});`;
         
         fs.writeFileSync(circuitFullPath, circuitContent, 'utf-8');
     }
+    else console.log('Circuit already exists, no need to create.');
     return [circuitPath, circuitName];
 }
 
