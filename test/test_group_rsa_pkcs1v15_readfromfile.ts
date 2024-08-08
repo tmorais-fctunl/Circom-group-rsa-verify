@@ -131,6 +131,14 @@ describe(`Test rsa group signature with pkcs1v15 n = 64, k = 32, nPk = ${numPubl
         console.log("hashed"+hashed_array);
         */
 
+        /*console.log("Input file:");
+        console.log(`{
+            "publicKeys":${publicKeys_array},
+            "sign":${sign_array},
+            "hashed":${hashed_array}
+            }`);
+        */
+
         it('Testing ', async function () {
             let witness = await circuit.calculateWitness({
                 "publicKeys": publicKeys_array,

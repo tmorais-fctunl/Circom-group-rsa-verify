@@ -82,12 +82,12 @@ describe("Test rsa group signature with pkcs1v15 n = 64, k = 32, nPk = 2", funct
         let sign_array: bigint[] = bigint_to_array(64, 32, sign);
         let hashed_array: bigint[] = bigint_to_array(64, 4, hashed);
 
-        /*
-        console.log("exp"+exp_array);
-        console.log("sign"+sign_array);
-        console.log("modulus"+m_array);
-        console.log("hashed"+hashed_array);
-        */
+        console.log(`"publicKeys": ${JSON.stringify(publicKeys_array)}`);
+        //console.log("exp"+exp_array);
+        console.log(`"sign": ${JSON.stringify(sign_array)}`);
+        //console.log("modulus"+m_array);
+        console.log(`"hashed": ${JSON.stringify(hashed_array)}`);
+        
 
         it('Testing ', async function () {
             let witness = await circuit.calculateWitness({
