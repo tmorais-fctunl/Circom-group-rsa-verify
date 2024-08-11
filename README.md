@@ -16,3 +16,16 @@ Running circom with the 50 public keys circuit, to generate the r1cs, sym and wa
     labels: 29234428 
 
 Wasm calculator with 50 Public keys took 11min:27s to generate the witness (Failed tho...).
+
+Even though the witness generation is fast with 2 Public keys,
+Computing the proof with the powers of tau reveals to be very time consuming.
+
+Circuit compilation of 2 Public Keys has the following information:
+    [INFO]  snarkJS: Curve: bn-128
+    [INFO]  snarkJS: # of Wires: 1082630
+    [INFO]  snarkJS: # of Constraints: 1093676
+    [INFO]  snarkJS: # of Private Inputs: 32
+    [INFO]  snarkJS: # of Public Inputs: 132
+    [INFO]  snarkJS: # of Labels: 1196572
+    [INFO]  snarkJS: # of Outputs: 1
+Circuit Compilation and Witness generation is fairly quick but proof generation with Groth16 bn128 21 took ~16h

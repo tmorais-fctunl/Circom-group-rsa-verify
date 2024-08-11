@@ -147,6 +147,8 @@ describe(`Test rsa group signature with pkcs1v15 n = 64, k = 32, nPk = ${numPubl
             });
 
             await circuit.checkConstraints(witness);
+            //let output = await circuit.getDecoratedOutput(witness);
+            //console.log(output);
             //await circuit.getDecoratedOutput(witness);
         });
     }
