@@ -3,7 +3,7 @@
 echo "Generating r1cs, wasm sym and c files. Might take some time..."
 START="$(date -u +%s.%N)"
 
-#circom "$1" --r1cs --wasm --sym --c -o "$2"
+circom "$1" --r1cs --wasm --sym --c -o "$2"
 
 END="$(date -u +%s.%N)"
 
