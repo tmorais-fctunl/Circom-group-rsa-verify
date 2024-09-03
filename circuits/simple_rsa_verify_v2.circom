@@ -1,6 +1,6 @@
 pragma circom 2.0.0;
 
-include "./pow_mod_v2.circom";
+include "./pow_mod_revisioned.circom";
 //include "../circomlib/circuits/comparators.circom";
 
 template NumToBits(n) {
