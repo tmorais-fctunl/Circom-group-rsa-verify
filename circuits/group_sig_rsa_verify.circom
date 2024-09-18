@@ -14,7 +14,6 @@ template GroupRsaVerifyPkcs1v15(w, nb, e_bits, hashLen, npk) {
     signal output out;
 
     component verifications[npk]; //verification of signature with all i of npk public keys
-    signal interm[npk];
 
     for (var i = 0; i<npk; i++) {
         verifications[i] = simple_RsaVerifyPkcs1v15(w, nb, e_bits, hashLen);
@@ -24,6 +23,7 @@ template GroupRsaVerifyPkcs1v15(w, nb, e_bits, hashLen, npk) {
         verifications[i].hashed <== hashed;
     }
 
+    signal interm[npk];
     interm[0] <== verifications[0].out;
 
     for (var i = 1; i<npk; i++) {
