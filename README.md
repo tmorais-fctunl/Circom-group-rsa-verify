@@ -1,43 +1,36 @@
-This README was last updated on August 4th 2024.
+This README was last updated on October 2nd 2024.
 
 This project is built on top of [circom-rsa-verify](https://github.com/zkp-application/circom-rsa-verify/tree/9b2f35842705455e3a57c44cda6cf70a3aceeb31) by @zkp-application @jacksoom .
+It was developed as part of a research dissertation at NOVA SST/FCT.
 
-There is a limit of 1000000ms for the tests.
-A guide is in works to run the prover/verifier algorithm outside of the test environment, as a way of resolving this limitation.
+# How to use this program:
+Pre Requisites: You need to have Circom and snarkJS installed in your machine. There is an helpful guide on [Circom's Website](https://docs.circom.io/getting-started/installation/) to achieve this
 
-Running group signature v1 with the 50 public keys circuit, to generate the r1cs, sym and wasm files takes 25min:55s on a Macbook Air M1 2020 w/ 16 RM RAM. The total space required to compute the files is 9,6GB. Details about the circuit:
-    
-    non-linear constraints: 26835020
-    linear constraints: 0
-    public inputs: 3204
-    private inputs: 32
-    public outputs: 1
-    wires: 26558006
-    labels: 29234428 
+Head over to the benchmarks folder where you can find scripts used to compile the circuits, generate the witnesses, generate the proving/generation keys and to generate/verify the proofs.
 
-Wasm calculator with 50 Public keys took 11min:27s to generate the witness (Failed tho...).
+## Circuit Compilation
+Use the circomcompile.sh script to compile a chosen circuit and choose its destination folder. This will output a "_js" folder and the .R1CS file needed to generate the keys.
+```sh circomcompile.sh {circuit.circom} {destination} 2>&1 | tee {destination}/circomCompileLog.txt```
 
-Even though the witness generation is fast with 2 Public keys,
-Computing the proof with the powers of tau reveals to be very time consuming.
+## Witness Generation
+Inside the destination folder use the computewitness.sh script
+```sh computewitness.sh 2>&1 | tee computeWitnessLog.txt```
 
-Circuit compilation of 2 Public Keys has the following information:
-    [INFO]  snarkJS: Curve: bn-128
-    [INFO]  snarkJS: # of Wires: 1082630
-    [INFO]  snarkJS: # of Constraints: 1093676
-    [INFO]  snarkJS: # of Private Inputs: 32
-    [INFO]  snarkJS: # of Public Inputs: 132
-    [INFO]  snarkJS: # of Labels: 1196572
-    [INFO]  snarkJS: # of Outputs: 1
-Circuit Compilation and Witness generation is fairly quick but proof generation with Groth16 bn128 21 took ~16h
+## Generate the proving/generation keys
+Return to the benchmarks folder and use the ppowersoftau_optimized.sh or ppowersoftau.sh script. You also need to provide the destination folder the circuit was compiled to andthe .R1CS file inside it.
+You also need to provide an appropriate .ptau file that can withstand the number of constraints the circuit has. You can find several pptau files at the [Perpetual Powers of Tau](https://github.com/privacy-scaling-explorations/perpetualpowersoftau?tab=readme-ov-file) repository.
+``` sh ppowersoftau_optimized.sh {destination}/{file.r1cs} {file.ptau} {destination} 2>&1 | tee {destination}/ptauphase2.txt```
 
+## Generate the witness
+Return to the destination folder where you will find an additonal "_js" folder. Once inside it, you will need to provide the input.json with the signals. This will output the witness .WTNS file
+```sh computewitness.sh 2>&1 | tee computeWitnessLog.txt```
 
-Running the group signature V2 with the 50 public keys circuit, to generate the r1cs, sym and wasm files takes 10s on a Macbook Air M1 2020 w/ 16 RM RAM. The total space required to compute the files is 222MB. Details about the circuit:
+## Generate the proof
+Inside the benchmarks folder you will find the generate_generate_proof.sh script which creates an executable script called generateproof.sh inside the destination folders listed in the script (You can and should edit this to include your destination folder).
+Onde this script is present in your desired destination folder, return to that destination and execute it.
+```sh generateproof.sh```
 
-    non-linear constraints: 564032
-    linear constraints: 0
-    public inputs: 3204
-    private inputs: 96
-    public outputs: 1
-    wires: 561696
-    labels: 645210
-
+## Verify the proof
+Inside the benchmarks folder you will find the generate_verify_proof.sh script which creates an executable script called verifyproof.sh inside the destination folders listed in the script (You can and should edit this to include your destination folder).
+Onde this script is present in your desired destination folder, return to that destination and execute it.
+```sh verifyproof.sh```
